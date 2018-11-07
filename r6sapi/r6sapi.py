@@ -67,7 +67,8 @@ valid_platforms = [x.lower() for x in dir(Platforms) if "_" not in x]
 PlatformURLNames = {
     "uplay": "OSBOR_PC_LNCH_A",
     "psn": "OSBOR_PS4_LNCH_A",
-    "xbl": "OSBOR_XBOXONE_LNCH_A"
+    "xbl": "OSBOR_XBOXONE_LNCH_A",
+    "uplay_test": "RS7_PC_LNCH_A"
 }
 
 
@@ -354,7 +355,8 @@ class Auth:
         self.spaceids = {
             "uplay": "5172a557-50b5-4665-b7db-e3f2e8c5041d",
             "psn": "05bfb3f7-6c21-4c42-be1f-97a33fb5cf66",
-            "xbl": "98a601e5-ca91-4440-b1c5-753f601a2c90"
+            "xbl": "98a601e5-ca91-4440-b1c5-753f601a2c90",
+            "uplay_test": "41aebcf5-56eb-4f1e-b154-9eb46718f465"
         }
         self.profileid = ""
         self.userid = ""
@@ -391,7 +393,7 @@ class Auth:
             raise FailedToConnect
 
     @asyncio.coroutine
-    def get(self, *args, retries=0, referer=None, json=True, **kwargs):
+    def get(self, *args, retries=0, referer=None, json=True, platform="uplay", **kwargs):
         if not self.key:
             for i in range(self.max_connect_retries):
                 try:
@@ -404,13 +406,19 @@ class Auth:
 
         if "headers" not in kwargs: kwargs["headers"] = {}
         kwargs["headers"]["Authorization"] = "Ubi_v1 t=" + self.key
-        kwargs["headers"]["Ubi-AppId"] = self.appid
+        if platform == "uplay_test":
+            kwargs["headers"]["Ubi-AppId"] = "a427a342-56bb-437b-b835-fa695c75893b"
+        else:
+            kwargs["headers"]["Ubi-AppId"] = self.appid
         kwargs["headers"]["Ubi-SessionId"] = self.sessionid
         kwargs["headers"]["Connection"] = "keep-alive"
         if referer is not None:
             if isinstance(referer, Player):
                 referer = "https://game-rainbow6.ubi.com/en-gb/uplay/player-statistics/%s/multiplayer" % referer.id
             kwargs["headers"]["Referer"] = str(referer)
+
+        print(args)
+        print(kwargs)
 
         resp = yield from self.session.get(*args, **kwargs)
 
@@ -487,6 +495,14 @@ class Auth:
         else:
             cache_key = "UID:%s" % uid
 
+        if platform == "uplay_test":
+            platform = "uplay"
+            realplatform = "uplay_test"
+        else:
+            realplatform = platform
+
+        if platform not in self.cache: self.cache[platform] = {}
+
         if cache_key in self.cache[platform]:
             if self.cachetime > 0 and self.cache[platform][cache_key][0] < time.time():
                 del self.cache[platform][cache_key]
@@ -494,9 +510,9 @@ class Auth:
                 return self.cache[platform][cache_key][1]
 
         if name:
-            data = yield from self.get("https://public-ubiservices.ubi.com/v2/profiles?nameOnPlatform=%s&platformType=%s" % (parse.quote(name), parse.quote(platform)))
+            data = yield from self.get("https://public-ubiservices.ubi.com/v2/profiles?nameOnPlatform=%s&platformType=%s" % (parse.quote(name), parse.quote(platform)), platform=realplatform)
         else:
-            data = yield from self.get("https://public-ubiservices.ubi.com/v2/users/%s/profiles?platformType=%s" % (uid, parse.quote(platform)))
+            data = yield from self.get("https://public-ubiservices.ubi.com/v2/users/%s/profiles?platformType=%s" % (uid, parse.quote(platform)), platform=realplatform)
 
         if "profiles" in data:
             results = [Player(self, x) for x in data["profiles"] if x.get("platformType", "") == platform]
