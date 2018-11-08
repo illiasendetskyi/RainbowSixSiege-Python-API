@@ -5,7 +5,7 @@ import r6sapi as api
 
 @asyncio.coroutine
 def run():
-    auth = api.Auth("alex@ksso.net", "tamere123")
+    auth = api.Auth("alex@ksso.net", "")
     
     player = yield from auth.get_player("zesquirrelnator", "uplay_test")
     operator = yield from player.get_operator("sledge")
