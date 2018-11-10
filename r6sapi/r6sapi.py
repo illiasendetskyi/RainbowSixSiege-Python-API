@@ -416,15 +416,20 @@ class Auth:
             if isinstance(referer, Player):
                 referer = "https://game-rainbow6.ubi.com/en-gb/uplay/player-statistics/%s/multiplayer" % referer.id
             kwargs["headers"]["Referer"] = str(referer)
-
-        print(args)
-        print(kwargs)
-
+        #print("=====REQUEST=====")
+        #print(args)
+        #print(kwargs)
+        #print("=====END REQUEST=====")
         resp = yield from self.session.get(*args, **kwargs)
-
+        #print("=====RESPONSE=====")
+        #print(resp)
+        #print("=====END RESPONSE=====")
         if json:
             try:
                 data = yield from resp.json()
+                #print("=====DATA=====")
+                #print(data)
+                #print("=====END DATA=====")
             except:
                 text = yield from resp.text()
 
@@ -451,7 +456,7 @@ class Auth:
                     msg = data.get("message", "")
                     if data["httpCode"] == 404: msg = "missing resource %s" % data.get("resource", args[0])
                     raise InvalidRequest("HTTP Code: %s, Message: %s" % (data["httpCode"], msg), code=data["httpCode"])
-
+            
             return data
         else:
             text = yield from resp.text()
@@ -515,7 +520,9 @@ class Auth:
             data = yield from self.get("https://public-ubiservices.ubi.com/v2/users/%s/profiles?platformType=%s" % (uid, parse.quote(platform)), platform=realplatform)
 
         if "profiles" in data:
-            results = [Player(self, x) for x in data["profiles"] if x.get("platformType", "") == platform]
+            #TODO: add support to call for multipleplayers at once
+            data["profiles"][0]["platformType"] = realplatform #here we only add this for one user
+            results = [Player(self, x) for x in data["profiles"] if x.get("platformType", "") == realplatform]
             if len(results) == 0: raise InvalidRequest("No results")
             if self.cachetime != 0:
                 self.cache[platform][cache_key] = [time.time() + self.cachetime, results]
@@ -1053,6 +1060,7 @@ class Player:
 
     def __init__(self, auth, data):
         self.auth = auth
+        #print(data)
 
         self.id = data.get("profileId")
         self.userid = data.get("userId")
