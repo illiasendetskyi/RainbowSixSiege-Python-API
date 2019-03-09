@@ -235,7 +235,7 @@ OperatorStatisticNames = {
     "KAID": "Rtila Electroclaw",
     "NOMAD": "Airjab repulsion grenades",
     "MOZZIE": "Tiny 4-legged bots",
-    "GRIDLOCK": "Hexagonal cluster of spikes",
+    "GRIDLOCK": "Hexagonal cluster of spikes"
 }
 
 
