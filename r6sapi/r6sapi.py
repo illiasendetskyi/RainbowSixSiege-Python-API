@@ -234,6 +234,8 @@ OperatorStatisticNames = {
     "CLASH": "CCE Shield",
     "KAID": "Rtila Electroclaw",
     "NOMAD": "Airjab repulsion grenades",
+    "MOZZIE": "Tiny 4-legged bots",
+    "GRIDLOCK": "Hexagonal cluster of spikes",
 }
 
 
@@ -569,7 +571,7 @@ class Auth:
         if self._op_definitions is not None:
             return self._op_definitions
 
-        resp = yield from self.session.get("https://game-rainbow6.ubi.com/assets/data/operators.bbbf29a090.json")
+        resp = yield from self.session.get("https://game-rainbow6.ubi.com/assets/data/operators.24b865895.json")
 
         data = yield from resp.json()
         self._op_definitions = data
