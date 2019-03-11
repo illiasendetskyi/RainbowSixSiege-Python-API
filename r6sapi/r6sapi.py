@@ -571,7 +571,7 @@ class Auth:
         if self._op_definitions is not None:
             return self._op_definitions
 
-        resp = yield from self.session.get("https://game-rainbow6.ubi.com/assets/data/operators.24b865895.json")
+        resp = yield from self.session.get("https://s3.amazonaws.com/r6operators.azarus.io/operators.json")
 
         data = yield from resp.json()
         self._op_definitions = data
